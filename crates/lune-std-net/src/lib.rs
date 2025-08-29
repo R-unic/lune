@@ -2,6 +2,7 @@
 
 use lune_utils::TableBuilder;
 use mlua::prelude::*;
+use mlua_luau_scheduler::LuaSpawnExt;
 
 pub(crate) mod body;
 pub(crate) mod client;
@@ -78,7 +79,7 @@ async fn net_tcp_connect(_: Lua, (host, port, config): (String, u16, TcpConfig))
     self::client::connect_tcp(host, port, config).await
 }
 
-async fn net_ws_connect(_: Lua, url: String) -> LuaResult<Websocket<WsStream>> {
+async fn net_ws_connect(lua: Lua, url: String) -> LuaResult<Websocket<WsStream>> {
     let url = url.parse().into_lua_err()?;
     self::client::connect_ws(url).await
 }

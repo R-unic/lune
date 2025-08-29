@@ -4,10 +4,17 @@ use std::{
     env::consts::{ARCH, OS},
     path::MAIN_SEPARATOR,
     process::Stdio,
+    sync::{
+        Arc,
+        atomic::{AtomicBool, Ordering},
+    },
+    thread,
 };
 
 use mlua::prelude::*;
 use mlua_luau_scheduler::Functions;
+use signal_hook::consts::signal::*;
+use signal_hook::flag;
 
 use lune_utils::{
     TableBuilder,
@@ -75,7 +82,7 @@ pub fn module(lua: Lua) -> LuaResult<LuaTable> {
     let process_exit = fns.exit;
 
     // Create the full process table
-    TableBuilder::new(lua)?
+    TableBuilder::new(lua.clone())?
         .with_value("os", os)?
         .with_value("arch", arch)?
         .with_value("endianness", endianness)?
@@ -85,7 +92,30 @@ pub fn module(lua: Lua) -> LuaResult<LuaTable> {
         .with_value("exit", process_exit)?
         .with_async_function("exec", process_exec)?
         .with_function("create", process_create)?
+        .with_value("pollSignals", create_process_poll_signals(&lua))?
         .build_readonly()
+}
+
+pub fn create_process_poll_signals(lua: &Lua) -> LuaFunction {
+    let got_sigint = Arc::new(AtomicBool::new(false));
+    let got_sigterm = Arc::new(AtomicBool::new(false));
+
+    // Register OS signal hooks
+    flag::register_conditional_default(SIGINT, Arc::clone(&got_sigint))
+        .expect("failed to register SIGINT hook");
+    flag::register_conditional_default(SIGTERM, Arc::clone(&got_sigterm))
+        .expect("failed to register SIGTERM hook");
+
+    lua.create_function(move |_, callback: LuaFunction| {
+        if got_sigint.swap(false, Ordering::SeqCst) {
+            return callback.call::<()>(SIGINT).into_lua_err();
+        }
+        if got_sigterm.swap(false, Ordering::SeqCst) {
+            return callback.call::<()>(SIGTERM).into_lua_err();
+        }
+        Ok(())
+    })
+    .expect("failed to create process.pollSignals function")
 }
 
 async fn process_exec(
@@ -114,13 +144,23 @@ async fn process_exec(
 
 fn process_create(
     lua: &Lua,
-    (program, args, options): (String, ProcessArgs, ProcessSpawnOptions),
+    (program, args, mut options): (String, ProcessArgs, ProcessSpawnOptions),
 ) -> LuaResult<LuaValue> {
+    let stdin = options.stdio.stdin.take();
+    let stdout = options.stdio.stdout;
+    let stderr = options.stdio.stderr;
+
+    let stdin_stdio = if stdin.is_some() {
+        Stdio::piped()
+    } else {
+        Stdio::null()
+    };
+
     let child = options
         .into_command(program, args)
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
+        .stdin(stdin_stdio)
+        .stdout(stdout.as_stdio())
+        .stderr(stderr.as_stdio())
         .spawn()?;
 
     create::Child::new(lua, child).into_lua(lua)

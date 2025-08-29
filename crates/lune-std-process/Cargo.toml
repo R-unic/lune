@@ -27,6 +27,7 @@ async-lock = "3.4"
 async-process = "2.3"
 blocking = "1.6"
 futures-lite = "2.6"
-futures-util = "0.3" # Needed for select! macro...
+futures-util = "0.3"  # Needed for select! macro...
 
 lune-utils = { version = "0.3.1", path = "../lune-utils" }
+signal-hook = "0.3.18"

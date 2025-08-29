@@ -149,3 +149,97 @@ impl FromStr for LuneStandardLibrary {
         })
     }
 }
+
+/**
+    An extended library provided by a third party.
+*/
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
+#[rustfmt::skip]
+pub enum LuneExtensionLibrary {
+    #[cfg(feature = "sdl3")]     Sdl3
+}
+
+impl LuneExtensionLibrary {
+    /**
+        All available extension libraries.
+    */
+    #[rustfmt::skip]
+    pub const ALL: &'static [Self] = &[
+        #[cfg(feature = "sdl3")] Self::Sdl3
+    ];
+
+    /**
+        Gets the name of the library, such as `sdl3`.
+    */
+    #[must_use]
+    #[rustfmt::skip]
+    #[allow(unreachable_patterns)]
+    pub fn name(&self) -> &'static str {
+        match self {
+            #[cfg(feature = "sdl3")] Self::Sdl3 => "sdl3",
+
+            _ => unreachable!("no extension library enabled"),
+        }
+    }
+
+    /**
+        Returns type definitions for the library.
+    */
+    #[must_use]
+    #[rustfmt::skip]
+    #[allow(unreachable_patterns)]
+    pub fn typedefs(&self) -> String {
+    	match self {
+            #[cfg(feature = "sdl3")] Self::Sdl3 => lune_std_sdl3::typedefs(),
+
+            _ => unreachable!("no extension library enabled"),
+        }
+    }
+
+    /**
+        Creates the Lua module for the library.
+
+        # Errors
+
+        If the library could not be created.
+    */
+    #[rustfmt::skip]
+    #[allow(unreachable_patterns)]
+    pub fn module(&self, lua: Lua) -> LuaResult<LuaTable> {
+        let mod_lua = lua.clone();
+        let res: LuaResult<LuaTable> = match self {
+            #[cfg(feature = "sdl3")] Self::Sdl3 => lune_std_sdl3::module(mod_lua),
+
+            _ => unreachable!("no extension library enabled"),
+        };
+        match res {
+            Ok(v) => Ok(v),
+            Err(e) => Err(e.context(format!(
+                "Failed to create extension library '{}'",
+                self.name()
+            ))),
+        }
+    }
+}
+
+impl FromStr for LuneExtensionLibrary {
+    type Err = String;
+    #[rustfmt::skip]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let low = s.trim().to_ascii_lowercase();
+        Ok(match low.as_str() {
+            #[cfg(feature = "sdl3")] "sdl3" => Self::Sdl3,
+
+            _ => {
+                return Err(format!(
+                    "Unknown extension library '{low}'\nValid libraries are: {}",
+                    Self::ALL
+                        .iter()
+                        .map(Self::name)
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                ))
+            }
+        })
+    }
+}

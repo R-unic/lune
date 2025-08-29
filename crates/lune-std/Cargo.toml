@@ -14,16 +14,17 @@ workspace = true
 
 [features]
 default = [
-    "datetime",
-    "fs",
-    "luau",
-    "net",
-    "process",
-    "regex",
-    "roblox",
-    "serde",
-    "stdio",
-    "task",
+  "datetime",
+  "fs",
+  "luau",
+  "net",
+  "process",
+  "regex",
+  "roblox",
+  "serde",
+  "stdio",
+  "task",
+  "sdl3",
 ]
 
 datetime = ["dep:lune-std-datetime"]
@@ -36,6 +37,7 @@ roblox = ["dep:lune-std-roblox"]
 serde = ["dep:lune-std-serde"]
 stdio = ["dep:lune-std-stdio"]
 task = ["dep:lune-std-task"]
+sdl3 = ["dep:lune-std-sdl3"]
 
 [dependencies]
 mlua = { version = "0.11.1", features = ["luau"] }
@@ -60,3 +62,4 @@ lune-std-roblox = { optional = true, version = "0.3.1", path = "../lune-std-robl
 lune-std-serde = { optional = true, version = "0.3.1", path = "../lune-std-serde" }
 lune-std-stdio = { optional = true, version = "0.3.1", path = "../lune-std-stdio" }
 lune-std-task = { optional = true, version = "0.3.1", path = "../lune-std-task" }
+lune-std-sdl3 = { optional = true, version = "0.3.1", path = "../lune-std-sdl3" }

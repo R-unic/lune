@@ -34,37 +34,21 @@ export type ExecStdioOptions = {
 }
 
 --[=[
-	@interface ExecOptions
+	@interface ProcessSpawnOptions
 	@within Process
 
-	A dictionary of options for `process.exec`, with the following available values:
+	A dictionary of options for spawning processes with the following available values:
 
 	* `cwd` - The current working directory for the process
 	* `env` - Extra environment variables to give to the process
 	* `shell` - Whether to run in a shell or not - set to `true` to run using the default shell, or a string to run using a specific shell
 	* `stdio` - How to treat output and error streams from the child process - see `StdioKind` and `StdioOptions` for more info
 ]=]
-export type ExecOptions = {
+export type ProcessSpawnOptions = {
 	cwd: string?,
 	env: { [string]: string }?,
 	shell: (boolean | string)?,
 	stdio: (ExecStdioKind | ExecStdioOptions)?,
-}
-
---[=[
-	@interface CreateOptions
-	@within Process
-
-	A dictionary of options for `process.create`, with the following available values:
-
-	* `cwd` - The current working directory for the process
-	* `env` - Extra environment variables to give to the process
-	* `shell` - Whether to run in a shell or not - set to `true` to run using the default shell, or a string to run using a specific shell
-]=]
-export type CreateOptions = {
-	cwd: string?,
-	env: { [string]: string }?,
-	shell: (boolean | string)?,
 }
 
 --[=[
@@ -333,7 +317,11 @@ end
 	@param options A dictionary of options for the child process
 	@return A dictionary with the readers and writers to communicate with the child process
 ]=]
-function process.create(program: string, params: { string }?, options: CreateOptions?): ChildProcess
+function process.create(
+	program: string,
+	params: { string }?,
+	options: ProcessSpawnOptions?
+): ChildProcess
 	return nil :: any
 end
 
@@ -355,8 +343,18 @@ end
 	@param options A dictionary of options for the child process
 	@return A dictionary representing the result of the child process
 ]=]
-function process.exec(program: string, params: { string }?, options: ExecOptions?): ExecResult
+function process.exec(
+	program: string,
+	params: { string }?,
+	options: ProcessSpawnOptions?
+): ExecResult
 	return nil :: any
 end
+
+function process.pollSignals(callback: (number) -> ()): ()
+	return nil :: any
+end
+
+export type process = typeof(process)
 
 return process

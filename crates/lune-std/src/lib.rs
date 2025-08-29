@@ -9,7 +9,7 @@ mod require;
 
 pub use self::global::LuneStandardGlobal;
 pub use self::globals::version::set_global_version;
-pub use self::library::LuneStandardLibrary;
+pub use self::library::{LuneExtensionLibrary, LuneStandardLibrary};
 
 /**
     Injects all standard globals into the given Lua state / VM.
@@ -37,6 +37,22 @@ pub fn inject_globals(lua: Lua) -> LuaResult<()> {
 */
 pub fn inject_std(lua: Lua) -> LuaResult<()> {
     for library in LuneStandardLibrary::ALL {
+        let alias = format!("@lune/{}", library.name());
+        let module = library.module(lua.clone())?;
+        lua.register_module(&alias, module)?;
+    }
+    Ok(())
+}
+
+/**
+    Injects all extension libraries into the given Lua state / VM.
+
+    # Errors
+
+    Errors when out of memory, or if *default* Lua globals are missing.
+*/
+pub fn inject_ext(lua: Lua) -> LuaResult<()> {
+    for library in LuneExtensionLibrary::ALL {
         let alias = format!("@lune/{}", library.name());
         let module = library.module(lua.clone())?;
         lua.register_module(&alias, module)?;

@@ -368,6 +368,11 @@ impl Runtime {
             lune_std::inject_std(self.lua.clone())?;
         }
 
+        #[cfg(any(feature = "std-sdl3"))]
+        {
+            lune_std::inject_ext(self.lua.clone())?;
+        }
+
         // Enable / disable the JIT as requested, before loading anything
         self.lua.enable_jit(self.jit.enabled());
 

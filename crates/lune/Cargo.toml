@@ -30,18 +30,20 @@ std-roblox = ["dep:lune-std", "lune-std/roblox"]
 std-serde = ["dep:lune-std", "lune-std/serde"]
 std-stdio = ["dep:lune-std", "lune-std/stdio"]
 std-task = ["dep:lune-std", "lune-std/task"]
+std-sdl3 = ["dep:lune-std", "lune-std/sdl3"]
 
 std = [
-    "std-datetime",
-    "std-fs",
-    "std-luau",
-    "std-net",
-    "std-process",
-    "std-regex",
-    "std-roblox",
-    "std-serde",
-    "std-stdio",
-    "std-task",
+  "std-datetime",
+  "std-fs",
+  "std-luau",
+  "std-net",
+  "std-process",
+  "std-regex",
+  "std-roblox",
+  "std-serde",
+  "std-stdio",
+  "std-task",
+  "std-sdl3",
 ]
 
 cli = ["dep:clap", "dep:rustyline", "dep:zip", "dep:lune-std-net"]
